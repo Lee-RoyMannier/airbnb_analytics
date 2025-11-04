@@ -5,6 +5,7 @@ pour plusieurs villes. Pour notre travail, nous avons choisi la ville d'Amsterda
 
 <details>
    <summary>Mise en place de dbt et de snowflake</summary>
+
 ## C'est quoi DBT?
    DBT est un outil SQL qui permet:
 1. Aux DA/DE d'écrire les trasnformations de leurs données en SQL
