@@ -3,6 +3,8 @@
 Le jeu de données a été téléchargé depuis le site https://insideairbnb.com/get-the-data/ qui regroupe les données Airbnb 
 pour plusieurs villes. Pour notre travail, nous avons choisi la ville d'Amsterdam correspondant à un extrait du 11 Mars 2024
 
+<details>
+   <summary>Mise en place de dbt et de snowflake</summary>
 ## C'est quoi DBT?
    DBT est un outil SQL qui permet:
 1. Aux DA/DE d'écrire les trasnformations de leurs données en SQL
@@ -166,3 +168,4 @@ INSERT INTO AIRBNB_PROJECT.RAW.REVIEWS (SELECT $1 as listing_id,
                                 from @jeu_de_donnees_airbnb/branches/main/dataset/reviews.csv
                                     (FILE_FORMAT => 'format_jeu_de_donnees'));
 ```
+</details>
