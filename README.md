@@ -4,7 +4,7 @@ Le jeu de données a été téléchargé depuis le site https://insideairbnb.com
 pour plusieurs villes. Pour notre travail, nous avons choisi la ville d'Amsterdam correspondant à un extrait du 11 Mars 2024
 
 <details>
-   <summary>Mise en place de dbt et de snowflake</summary>
+   <summary>Mise en place de dbt (sur dbt cloud) et de snowflake</summary>
 
 ## C'est quoi DBT?
    DBT est un outil SQL qui permet:
@@ -169,4 +169,90 @@ INSERT INTO AIRBNB_PROJECT.RAW.REVIEWS (SELECT $1 as listing_id,
                                 from @jeu_de_donnees_airbnb/branches/main/dataset/reviews.csv
                                     (FILE_FORMAT => 'format_jeu_de_donnees'));
 ```
+Ne pas oublier de rentrer toutes les informations importante (comme le rôle, la connection ect) dans les paramètre du projet DBT
+</details>
+
+<details>
+   <summary>Création de nos modèles dans DBT</summary>
+   Si je devais expliquer ce qu'est un modèles dbt, je dirai:
+   Les modèles DBT sont des fichiers qui contiennent des requêtes SQL qui servent à définir des tables, vue ou de simples parties d'une requête plus large, et qui permettent ensuite de travailler avec
+   Le SQL pour `curation_hosts` est le suivant:
+
+```snowflake
+WITH hosts_raw AS (
+    SELECT
+		host_id,
+		CASE WHEN len(host_name) = 1 THEN 'Anonyme' ELSE host_name END AS host_name,
+		host_since,
+		host_location,
+		SPLIT_PART(host_location, ',', 1) AS host_city,
+		SPLIT_PART(host_location, ',', 2) AS host_country,
+		TRY_CAST(REPLACE(host_response_rate, '%', '') AS INTEGER) AS response_rate,
+		host_is_superhost = 't' AS is_superhost,
+		host_neighbourhood,
+		host_identity_verified = 't' AS is_identity_verified
+    FROM airbnb.raw.hosts)
+SELECT *
+from hosts_raw
+```
+
+Le SQL pour `curation_listings` est le suivant:
+```snowflake
+WITH listings_raw AS 
+	(SELECT 
+		id AS listing_id,
+		listing_url,
+		name,
+		description,
+		description IS NOT NULL has_description,
+		neighbourhood_overview,
+		neighbourhood_overview IS NOT NULL AS has_neighrbourhood_description,
+		host_id,
+		latitude,
+		longitude,
+		property_type,
+		room_type,
+		accommodates,
+		bathrooms,
+		bedrooms,
+		beds,
+		amenities,
+        try_cast(split_part(price, '$', 1) as float) as price,
+		minimum_nights,
+		maximum_nights
+	FROM airbnb.raw.listings )
+SELECT *
+FROM listings_raw
+```
+
+Le SQL pour `curation_reviews` est le suivant:
+```
+WITH curation_reviews as 
+(
+    SELECT 
+        LISTING_ID,
+        DATE review_date
+    FROM
+        airbnb.raw.reviews
+)
+
+SELECT
+     LISTING_ID,
+    review_date,
+    COUNT(*) number_reviews
+FROM 
+    curation_reviews
+GROUP BY LISTING_ID, review_date
+
+```
+<img width="677" height="502" alt="image" src="https://github.com/user-attachments/assets/9fb4c2d0-664b-4ca8-89e7-45a237966ae9" />
+Nos models CURATION sont la version "propre" de nos donnée provenant de la source principale RAW
+
+maintenant que c'est fait, nous allons pouvoir mettre un vrai nom à notre projet dans "dbt_project.yaml"
+<img width="623" height="137" alt="image" src="https://github.com/user-attachments/assets/78239081-08d3-46cb-a5b5-ba07b5e5a839" />
+<img width="385" height="122" alt="image" src="https://github.com/user-attachments/assets/262872d2-567f-4721-a1ee-c23f3769b807" />
+
+
+
+En rajoutant +schema:curation, je vais créer un schema dans snowflake me permettant de séparer mes tables curation du raw et ainsi garder une certaine cohérence.
 </details>
