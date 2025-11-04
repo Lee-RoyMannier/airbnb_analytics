@@ -3,6 +3,14 @@
 Le jeu de données a été téléchargé depuis le site https://insideairbnb.com/get-the-data/ qui regroupe les données Airbnb 
 pour plusieurs villes. Pour notre travail, nous avons choisi la ville d'Amsterdam correspondant à un extrait du 11 Mars 2024
 
+## C'est quoi DBT?
+   DBT est un outil SQL qui permet:
+   1 - Aux DA/DE d'écrire les trasnformations de leurs données en SQL
+   2 - Aux DA/DE de ne âs répéter leur code SQL grâce à la modularisation et à la paramétrisation
+   3 - Aux DA/DE de tester leurs code SQL en isolation mais aussi de voir comment il s'intègre à la plateforme analytics
+   4 - Aux entreprises de s'assurer de la traçabilité des données
+   5 - Aux entreprises d'appliquer les bonnes règles de data gouvernance
+
 ## Traitement
 1. Division du fichier `listings.csv.gz` en 2 fichiers:
    1. [listings](dataset/listings.csv) avec un nombre de colonnes réduit et qui ne contient que les donneées qui 
