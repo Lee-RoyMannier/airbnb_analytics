@@ -1,0 +1,126 @@
+--> On ce mets sur le WH COMPUTE_WH
+USE WAREHOUSE COMPUTE_WH;
+--> On utilise la database AIRBNB
+USE DATABASE AIRBNB_PROJECT;
+--> On utilise le schema de donnée RAW
+USE SCHEMA RAW;    
+
+
+-- |------------------------ Specifique à SNOWFLAKE -------------------------------|--- 
+-->  Ici on créer ou remplacer une intégration 
+		--> API du nom <<integration_jeu_de_donnees_github>>
+create or replace api integration integration_jeu_de_donnees_github
+api_provider = git_https_api --> On gros on dit que ça vient de github
+--> Le seul repo accepté c'est celui mis dans cette variable
+api_allowed_prefixes = ('https://github.com/QuantikDataStudio') 
+--> On dit si on veut qu'il soit utilisé ou pas
+enabled = true;
+
+➤ On crée (ou remplace) une intégration API appelée integration_jeu_de_donnees_github.
+➤ api_provider = git_https_api indique qu’on utilise l’intégration native Git 
+		de Snowflake pour se connecter à GitHub.
+➤ api_allowed_prefixes restreint les dépôts Git autorisés à ceux commençant 
+		par l’URL donnée (ici, ton organisation GitHub).
+➤ enabled = true active l’intégration (permet son utilisation).
+
+
+
+--> On va crééer ou remplacer le repository
+create or replace git repository jeu_de_donnees_airbnb
+api_integration = integration_jeu_de_donnees_github
+origin = 'https://github.com/QuantikDataStudio/dbt.git';
+➤ On crée (ou remplace) un dépôt Git Snowflake appelé jeu_de_donnees_airbnb.
+➤ Il utilise l’intégration integration_jeu_de_donnees_github pour s’authentifier.
+➤ L’origine du dépôt est le repository GitHub spécifié (dbt.git).
+
+--> Ici on va définir le format des données utilisé
+create or replace file format format_jeu_de_donnees
+type = csv # ici le type de donnée chargé
+skip_header = 1 # on va lui dire de skip la premier ligne car il s'agit des noms des colonnes
+field_optionally_enclosed_by = '"' # le " cera utiliser pour délimiter nos valeur;
+
+-- |---------------------------------------------------------------------------------|---
+
+--> Création de la table HOST
+CREATE TABLE AIRBNB_PROJECT.RAW.HOSTS (
+    host_id                STRING,
+    host_name              STRING,
+    host_since             DATE,
+    host_location          STRING,
+    host_response_time     STRING,
+    host_response_rate     STRING,
+    host_is_superhost      STRING,
+    host_neighbourhood     STRING,
+    host_identity_verified STRING
+);
+
+--> insertion des données dans notre table
+		ICI nous avons une notation spécifique a snowflake
+		le @ designe un objet (intégration) spécifique et non une table
+		chaque $ désigne la colonne dans le csv
+insert INTO AIRBNB_PROJECT.RAW.HOSTS (SELECT $1 as host_id,
+                                     $2 as host_name,
+                                     $3 as host_since,
+                                     $4 as host_location,
+                                     $5 as host_response_time,
+                                     $6 as host_response_rate,
+                                     $7 as host_is_superhost,
+                                     $8 as host_neighbourhood,
+                                     $9 as host_identity_verified
+                              from @jeu_de_donnees_airbnb/branches/main/dataset/hosts.csv
+                          (FILE_FORMAT => 'format_jeu_de_donnees'));
+
+CREATE TABLE AIRBNB_PROJECT.RAW.LISTINGS
+(
+    id                     STRING,
+    listing_url            STRING,
+    name                   STRING,
+    description            STRING,
+    neighbourhood_overview STRING,
+    host_id                STRING,
+    latitude               STRING,
+    longitude              STRING,
+    property_type          STRING,
+    room_type              STRING,
+    accommodates           integer,
+    bathrooms              FLOAT,
+    bedrooms               FLOAT,
+    beds                   FLOAT,
+    amenities              STRING,
+    price                  STRING,
+    minimum_nights         INTEGER,
+    maximum_nights         INTEGER
+);
+
+INSERT INTO AIRBNB_PROJECT.RAW.LISTINGS (SELECT $1  AS id,
+                                        $2  AS listing_url,
+                                        $3  AS name,
+                                        $4  AS description,
+                                        $5  AS neighbourhood_overview,
+                                        $6  AS host_id,
+                                        $7  AS latitude,
+                                        $8  AS longitude,
+                                        $9  AS property_type,
+                                        $10 AS room_type,
+                                        $11 AS accommodates,
+                                        $12 AS bathrooms,
+                                        $13 AS bedrooms,
+                                        $14 AS beds,
+                                        $15 AS amenities,
+                                        $16 AS price,
+                                        $17 AS minimum_nights,
+                                        $18 AS maximum_nights
+                                 from @jeu_de_donnees_airbnb/branches/main/dataset/listings.csv
+                          (FILE_FORMAT => 'format_jeu_de_donnees'));
+
+
+CREATE TABLE AIRBNB_PROJECT.RAW.REVIEWS
+(
+    listing_id  STRING,
+    date        DATE
+);
+
+INSERT INTO AIRBNB_PROJECT.RAW.REVIEWS (SELECT $1 as listing_id,
+                                       $2 as date
+                                from @jeu_de_donnees_airbnb/branches/main/dataset/reviews.csv
+                                    (FILE_FORMAT => 'format_jeu_de_donnees'));

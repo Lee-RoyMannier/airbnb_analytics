@@ -1,0 +1,42 @@
+-- Utiliser le rôle admin
+---> On va dire ici, utilise le role ACCOUNTADMIN
+USE ROLE ACCOUNTADMIN;
+
+-- Creer le rôle `transform` 
+---> On va dire ici, créé moi le rôle transform si il n'existe pas, 
+			il sera donnée a DBT plus tard
+CREATE ROLE IF NOT EXISTS transform;
+--> Maintenant que le rôle est créée, je veux donner mon rôle transform a accountadmin
+		Donc maintenant, ACCOUNDADMIN aura aussi les droit de transform
+GRANT ROLE TRANSFORM TO ROLE ACCOUNTADMIN;
+
+-- Créer la warehouse par défaut, si nécessaire 
+---> Je créée ma WH COMPUTE_WH si il n'existe pas
+CREATE WAREHOUSE IF NOT EXISTS COMPUTE_WH;
+---> On permet au rôle TRANSFORM n'executer du sql sur le WH COMPUTE_WH 
+GRANT OPERATE ON WAREHOUSE COMPUTE_WH TO ROLE TRANSFORM;
+
+-- Créer l'utilisateur DBT et lui assigner le rôle
+CREATE USER IF NOT EXISTS dbt
+  PASSWORD='METTRE VOTRE MDP'
+  LOGIN_NAME='dbt'
+  MUST_CHANGE_PASSWORD=FALSE
+  DEFAULT_WAREHOUSE='COMPUTE_WH'
+  DEFAULT_ROLE='transform'
+  DEFAULT_NAMESPACE='AIRBNB_PROJECT.RAW'
+  COMMENT='Utilisateur DBT pour la transformation des données';
+  
+---> On assigne le rôle transform a l'utilisateur dbt
+GRANT ROLE transform to USER dbt;
+
+-- Création de la BDD et du schéma
+CREATE DATABASE IF NOT EXISTS AIRBNB_PROJECT;
+CREATE SCHEMA IF NOT EXISTS AIRBNB_PROJECT.RAW;
+
+-- Mise en place des permissions pour le rôle `transform`
+GRANT ALL ON WAREHOUSE COMPUTE_WH TO ROLE transform; 
+GRANT ALL ON DATABASE AIRBNB_PROJECT to ROLE transform;
+GRANT ALL ON ALL SCHEMAS IN DATABASE AIRBNB_PROJECT to ROLE transform;
+GRANT ALL ON FUTURE SCHEMAS IN DATABASE AIRBNB_PROJECT to ROLE transform;
+GRANT ALL ON ALL TABLES IN SCHEMA AIRBNB_PROJECT.RAW to ROLE transform;
+GRANT ALL ON FUTURE TABLES IN SCHEMA AIRBNB_PROJECT.RAW to ROLE transform;
