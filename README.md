@@ -1,3 +1,40 @@
+# 🏠 Airbnb Analytics — Amsterdam Insights with dbt
+## 📖 Contexte & objectifs
+
+Ce projet vise à analyser le marché Airbnb à Amsterdam à l’aide de dbt (Data Build Tool) et de données ouvertes sur les locations et le tourisme.
+L’objectif est de créer un pipeline analytique reproductible qui transforme des données brutes en indicateurs utiles pour comprendre l’évolution du marché de la location courte durée.
+
+## 🎯 Questions analytiques
+### 🧩 Objectif 1 — Comprendre le marché Airbnb à Amsterdam
+
+🏙 Quelle est la distribution des prix par quartier ?
+
+⭐ Comment se répartissent les super-hôtes dans la ville ?
+
+💰 Existe-t-il une relation entre le statut de super-hôte et le prix moyen des annonces ?
+
+### 🌍 Objectif 2 — Étudier les tendances touristiques
+
+En combinant les jeux de données :
+
+curation_tourists_per_year (nombre de touristes à Amsterdam chaque année),
+
+et le nombre de reviews Airbnb laissées par an,
+
+le projet vise à :
+
+📊 déterminer si les touristes tendent à préférer Airbnb aux hôtels,
+
+📈 observer l’évolution de cette préférence au fil des années.
+
+## ⚙️ Stack technique
+| Outil                     | Rôle                                              |
+| ------------------------- | ------------------------------------------------- |
+| **dbt**                   | Transformation et modélisation des données        |
+| **Snowflake**             | Entrepôt de données                               |
+| **GitHub**                | Versioning et documentation du projet             |
+| **Inside Airbnb Dataset** | Source des données (hôtes, logements, prix, etc.) |
+
 # Le jeu de données Airbnb
 ## Source: 
 Le jeu de données a été téléchargé depuis le site https://insideairbnb.com/get-the-data/ qui regroupe les données Airbnb 
