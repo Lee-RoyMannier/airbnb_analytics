@@ -289,7 +289,136 @@ maintenant que c'est fait, nous allons pouvoir mettre un vrai nom à notre proje
 <img width="623" height="137" alt="image" src="https://github.com/user-attachments/assets/78239081-08d3-46cb-a5b5-ba07b5e5a839" />
 <img width="385" height="122" alt="image" src="https://github.com/user-attachments/assets/262872d2-567f-4721-a1ee-c23f3769b807" />
 
+En rajoutant: 
+	+schema:curation, 
+je vais créer un schema dans snowflake me permettant de séparer mes tables curation du raw et ainsi garder une certaine cohérence.
 
+Dans l'état actuel, quand on va build notre dbt, on va se retrouver avec un schema au nom: RAW_CURATION, hors, on ne veut pas, on veux quelque chose de professionel.
+On va alors écrire une macro Jinja permettant de contourner cela.
+=> macro/generate_schema_name.sqm
+```
+{% macro generate_schema_name(custom_schema_name, node) -%}
 
-En rajoutant +schema:curation, je vais créer un schema dans snowflake me permettant de séparer mes tables curation du raw et ainsi garder une certaine cohérence.
+    {%- set default_schema = target.schema -%}
+    {%- if custom_schema_name is none -%}
+
+        {{ default_schema }}
+
+    {%- else -%}
+
+        {{ custom_schema_name | trim }}
+
+    {%- endif -%}
+
+{%- endmacro %}
+```
+
+## Mise en place de mon linéage
+Dans mon dossier Models, je vais créer un fichier sources.yaml me permettant de définir mes tables et ainsi créer mes dépendance.
+```
+version: 2
+
+sources:
+  - name: raw_airbnb_data
+    database: airbnb_project
+    schema: raw
+    tables:
+      - name: hosts
+      - name: listings
+      - name: reviews
+```
+
+## Mise en place de notre Seed (tourists_per_year) 
+Dans l'arborescence de dbt, dans mon dosser seeds, je vais créer un fichier "tourists_per_year.csv" et y mettre le contenu de mon fichier.
+Une fois cela fait, je vais pouvoir ajouter mon seed a mon dbt_project.yaml
+```
+seeds:
+  airbnb_analytics:
+  tourists_per_year:
+    +enabled: true
+    +database: airbnb_project
+    +schema: raw
+```
+Maintenant je suis prêt a faire mon T dans mon ELT (Extract Load Transform)
+Je vais créer un curation_tourists_per_year.sql et lui mettre:
+```
+with curation_tourists AS
+(
+    SELECT  
+        year,
+        tourists
+    FROM
+        {{ ref('tourists_per_year')}}
+)
+
+SELECT  
+    DATE(year || '-12-31') as year,
+    tourists
+FROM    
+    curation_tourists
+```
+
+## Mise en place de Snapshots
+Les snapshots servent à capturer l'évolution des dpnnées dans le temps, c-a-d, garder l'historique des changements dans une table source.
+
+Dans mon dossier snapshots de dbt, je vais creer un fichier "snapshot_+nom de la table".sql (donc je vais creer un snapshot pour chaque fichier source qui risque de changer ET qui possède une clé unique permettant de filter dessus, ici hosts et listings, reviews ne possède pas de clé unique)
+
+Pour hosts:
+```
+{% snapshot hosts_snapshot %}
+
+    {{
+        config(
+          target_database='airbnb',
+          target_schema='snapshots',
+          strategy='check',
+          check_cols='all',
+          unique_key='host_id'
+        )
+    }}
+
+    select * from {{ source('raw_airbnb_data', 'hosts') }}
+
+{% endsnapshot %}
+```
+
+Pour listings:
+```
+{% snapshot listings_snapshot %}
+
+    {{
+        config(
+          target_database='airbnb',
+          target_schema='snapshots',
+          strategy='check',
+          check_cols='all',
+          unique_key='id'
+        )
+    }}
+
+    select * from {{ source('raw_airbnb_data', 'listings') }}
+
+{% endsnapshot %}
+```
+nb: maintenant que nos snapshots sont créés, je vais pouvoir les référencer dans mes tables curation:
+exemple:
+```
+	WITH hosts_raw AS (
+    SELECT
+		host_id,
+		CASE WHEN len(host_name) = 1 THEN 'Anonyme' ELSE host_name END AS host_name,
+		host_since,
+		host_location,
+		SPLIT_PART(host_location, ',', 1) AS host_city,
+		SPLIT_PART(host_location, ',', 2) AS host_country,
+		TRY_CAST(REPLACE(host_response_rate, '%', '') AS INTEGER) AS response_rate,
+		host_is_superhost = 't' AS is_superhost,
+		host_neighbourhood,
+		host_identity_verified = 't' AS is_identity_verified
+    FROM {{ ref("hosts_snapshot")}}
+        WHERE DBT_VALID_TO is NULL
+    )
+SELECT *
+from hosts_raw
+```
 </details>
