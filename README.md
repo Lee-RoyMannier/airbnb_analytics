@@ -421,4 +421,164 @@ exemple:
 SELECT *
 from hosts_raw
 ```
+## Mise en place de tests unitaire sur mes tables du schema RAW
+```
+version: 2
+
+sources:
+  - name: raw_airbnb_data
+    database: airbnb
+    schema: raw
+    tables:
+      - name: hosts
+        columns:
+        - name: host_id
+	        description: nom de description
+          tests:
+            - unique
+            - not_null
+        - name: host_name
+          tests:
+            - not_null
+        - name: host_since
+          tests:
+            - not_null
+        - name: host_identity_verified
+          tests:
+            - not_null
+            - accepted_values:
+	            values: ['t', 'f']
+
+      - name: listings
+	      columns:
+		      - name: host_id
+			      tests:
+				      - not_null
+				      - relationshi^s:
+					      to: source('raw_airbnb_data', 'hosts')
+					      field: host_id
+      - name: reviews
+```
+Etant donnée que certaines colonnes possèdes des valeurs manquantes, nous allons pas les tester.
+
+## Mise en place de tests unitaires sur mes tables du schema CURATION
+Je vais créer un fichier schema.yaml dans mon dossier models
+```
+version: 2
+
+models:
+  - name: curation_hosts
+    description: Table hotes nettoyée et formatée
+    columns:
+      - name: host_id
+        description: Identifiant unique de l'hôte
+        tests:
+          - unique
+          - not_null
+      - name: host_name
+        description: Nom de l'hôte
+        tests:
+          - not_null
+      - name: host_since
+        description: Date d'inscription de l'hôte
+        tests:
+          - not_null
+      - name: host_location
+        description: Ville et pays de l'hôte
+        tests:
+          - not_null
+      - name: host_city
+        description: Ville de l'hôte
+        tests:
+          - not_null
+      - name: host_country
+        description: Pays de l'hôte
+        tests:
+          - not_null
+      - name: is_superhost
+        description: Indicateur si l'hôte a le statut superhost 
+        tests:
+          - not_null
+          - accepted_values:
+              values: [TRUE, FALSE]
+      - name: host_neighbourhood
+        description: Quartier de l'hôte
+        tests:
+          - not_null
+      - name: is_identity_verified
+        description: Indicateur si l'identité de l'hôte a été vérifiée  
+        tests:
+          - not_null
+          - accepted_values:
+              values: [TRUE, FALSE]
+  - name: curation_listings
+    desciption: Table de listing nettoyée et formatée
+    columns:
+      - name: price
+        description: Prix par nuit
+        tests:
+          - not_null
+  - name: curation_reviews
+    desciption: Table de review nettoyée et formatée
+    columns:
+      - name: listing_id
+        description: identifiant du listing, reférence la colonne lisintg_id dans curation_listings
+        tests:
+          - not_null
+          - relationships:
+              to: ref('curation_listings')
+              field: listing_id
+```
+Quand je vais faire un dbt build, certainnes colonnes vont bug car il y a des élements NULL donc pour passer cela, je vais y mettre des conditions
+exemple pour la table curation_listings:
+```
+WITH listings_raw AS 
+	(SELECT 
+		id AS listing_id,
+		listing_url,
+		name,
+		description,
+		description IS NOT NULL has_description,
+		neighbourhood_overview,
+		neighbourhood_overview IS NOT NULL AS has_neighrbourhood_description,
+		host_id,
+		latitude,
+		longitude,
+		property_type,
+		room_type,
+		accommodates,
+		bathrooms,
+		bedrooms,
+		beds,
+		amenities,
+        try_cast(split_part(price, '$', 1) as float) as price,
+		minimum_nights,
+		maximum_nights
+	FROM {{ ref("listings_snapshot") }}
+        WHERE DBT_VALID_TO is NULL )
+SELECT *
+FROM listings_raw
+where price is not null
+```
+
+## Mise en place de mes units test
+Dans le fichier sources.yaml
+```
+unit_tests:
+  - name: test_is_host_data_transformation_correct
+    description: "Vérifie que host_name, host_city, host_country et response_rate sont créés correctement"
+    model: curation_hosts
+    given:
+      - input: ref('hosts_snapshot')
+        rows:
+          - {host_name: 'Jacko', host_location: "ville,pays", host_response_rate: '32%', DBT_VALID_TO: null, host_is_superhost: 't', host_neighbourhood: 'quartier'} 
+          - {host_name: 'Xi', host_location: "ville,pays", host_response_rate: '32.03%', DBT_VALID_TO: null, host_is_superhost: 't', host_neighbourhood: 'quartier'}
+          - {host_name: 'J', host_location: "pays,ville", host_response_rate: '32.53%', DBT_VALID_TO: null, host_is_superhost: 't', host_neighbourhood: 'quartier'}
+    expect:
+      rows:
+        - {host_name: 'Jacko', host_city: 'ville', host_country: 'pays', response_rate: 32}
+        - {host_name: 'Xi', host_city: 'ville', host_country: 'pays', response_rate: 32}
+        - {host_name: 'Anonyme', host_city: 'pays', host_country: 'ville', response_rate: 33}
+
+```
 </details>
