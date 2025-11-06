@@ -344,7 +344,7 @@ unit_tests:
 ```
 </details>	
 
-# Résultats de nos Analyse SQL
+# Résultats de nos Analyses SQL
 
 ## 🏙 Quelle est la distribution des prix par quartier ?
 
