@@ -381,7 +381,8 @@ Les logements Budget (15–20 %) se trouvent surtout dans les quartiers périph�
 
 Les quartiers les plus dynamiques sont Oud-West, Grachtengordel, De Pijp et Jordaan, qui regroupent la majorité des annonces.
 En résumé, plus on s’éloigne du centre, plus les prix ont tendance à diminuer.
-=> Les résultats ont étés exportés en format csv
+
+=> Les résultats ont été exportés au format CSV
 
 ## ⭐ Comment se répartissent les super-hôtes dans la ville ?
 
@@ -448,7 +449,8 @@ L’analyse montre qu’il n’y a pas de lien direct entre le statut de super h
 
 Au contraire, les super hôtes pratiquent en moyenne des tarifs légèrement inférieurs à ceux des non super hôtes (environ 180 € contre 220 €).
 Cela suggère que le statut de super hôte reflète davantage la qualité du service et la fiabilité, plutôt qu’un positionnement haut de gamme.
-=> Les résultats ont étés exportés en format csv
+
+=> Les résultats ont été exportés au format CSV
 
 ##  tendances touristiques
 ```
