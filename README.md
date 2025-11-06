@@ -343,3 +343,160 @@ unit_tests:
 
 ```
 </details>	
+
+# Résultats de nos Analyse SQL
+
+## 🏙 Quelle est la distribution des prix par quartier ?
+
+```
+WITH categorisation_price as (
+    SELECT 
+        p.host_id,
+        CASE 
+            WHEN price < 100 THEN 'Budget'
+            WHEN price BETWEEN 100 AND 199 THEN 'Standard'
+            WHEN price BETWEEN 200 AND 399 THEN 'Confort'
+            WHEN price BETWEEN 400 AND 699 THEN 'Premium'
+            WHEN price BETWEEN 700 AND 999 THEN 'Luxe'
+            WHEN price >= 1000 THEN 'Exceptionnel'
+            ELSE 'Inconnu'
+        END AS price_category,
+        h.host_neighbourhood
+    FROM
+        {{ ref("curation_listings") }} p
+    INNER JOIN {{ ref("curation_hosts") }} h
+    ON p.host_id = h.host_id
+)
+
+SELECT
+    host_neighbourhood,
+    price_category,
+    count(price_category)
+FROM categorisation_price 
+GROUP BY 1, 2
+ORDER BY 1, 2, 3 DESC
+```
+L’analyse montre que la majorité des logements sont de catégorie Standard ou Confort (environ 70 %), représentant une offre de milieu de gamme.
+Les logements Budget (15–20 %) se trouvent surtout dans les quartiers périphériques comme Bos en Lommer ou Oost, tandis que les offres Premium et Luxe (environ 10 %) se concentrent dans les zones centrales et touristiques telles que Grachtengordel, De Pijp ou Jordaan.
+
+Les quartiers les plus dynamiques sont Oud-West, Grachtengordel, De Pijp et Jordaan, qui regroupent la majorité des annonces.
+En résumé, plus on s’éloigne du centre, plus les prix ont tendance à diminuer.
+=> Les résultats ont étés exportés en format csv
+
+## ⭐ Comment se répartissent les super-hôtes dans la ville ?
+
+```
+WITH distribution_hosts as (
+    SELECT
+        host_neighbourhood,
+        count(host_id) nb_host
+    from
+        AIRBNB_PROJECT.curation.curation_hosts
+    where is_superhost = TRUE
+    GROUP BY 1
+)
+
+
+SELECT
+    *
+FROM    
+    distribution_hosts
+ORDER BY nb_host DESC
+```
+L’analyse montre que les super hôtes sont principalement concentrés dans les quartiers centraux d’Amsterdam.
+Les zones les plus représentées sont Oud-West (78 super hôtes), Grachtengordel (63), Jordaan (42) et De Pijp (41), qui regroupent à eux seuls la majorité des super hôtes.
+
+Des quartiers comme Nieuwmarkt en Lastage, Westelijke Eilanden et Oosterparkbuurt affichent également une présence notable.
+À l’inverse, les quartiers périphériques comptent très peu de super hôtes (souvent moins de 5).
+
+En résumé, les super hôtes se concentrent dans les zones touristiques et centrales, là où la demande et la qualité de service sont les plus élevées.
+<img width="1183" height="546" alt="image" src="https://github.com/user-attachments/assets/913169d6-1ff5-4c90-a7d6-ff761130dc0c" />
+
+## 💰 Existe-t-il une corrélation entre le statut de super-hôte et le prix moyen des annonces ?
+
+```
+WITH super_host as (
+    SELECT 
+        ROUND(AVG(l.price),2) avg_price,
+        h.host_neighbourhood quartier,
+        'super host'
+    FROM AIRBNB_PROJECT.curation_info.curation_listings l
+    JOIN AIRBNB_PROJECT.curation.curation_hosts h
+    ON l.host_id = h.host_id
+    WHERE h.is_superhost = TRUE
+    GROUP BY quartier
+), no_super_host as (
+    SELECT 
+        ROUND(AVG(l.price),2) avg_price,
+        h.host_neighbourhood quartier,
+        'non super host'
+    FROM AIRBNB_PROJECT.curation_info.curation_listings l
+    JOIN AIRBNB_PROJECT.curation.curation_hosts h
+    ON l.host_id = h.host_id
+    WHERE h.is_superhost = FALSE
+    GROUP BY quartier
+)
+
+SELECT *
+FROM super_host
+UNION
+SELECT *
+FROM no_super_host
+ORDER BY quartier
+```
+L’analyse montre qu’il n’y a pas de lien direct entre le statut de super hôte et un prix plus élevé.
+
+Au contraire, les super hôtes pratiquent en moyenne des tarifs légèrement inférieurs à ceux des non super hôtes (environ 180 € contre 220 €).
+Cela suggère que le statut de super hôte reflète davantage la qualité du service et la fiabilité, plutôt qu’un positionnement haut de gamme.
+=> Les résultats ont étés exportés en format csv
+
+##  tendances touristiques
+```
+with review_per_year as (
+    SELECT
+        YEAR(review_date) year,
+        count(listing_id)total_review
+    FROM
+        AIRBNB_PROJECT.curation.curation_reviews
+    GROUP BY year
+), sejours_estimes as (
+    SELECt
+        year,
+        total_review,
+        ROUND(total_review::float/0.8, 0) sejour_estimes
+    FROM
+        review_per_year
+),tourisme_airbnb as (
+    select
+        year(t.year) year,
+        t.tourists tourist_total,
+        s.total_review,
+        s.sejour_estimes,
+        (s.sejour_estimes::float/t.tourists) * 100 pct_tourists_airbnb,
+        t.tourists - s.sejour_estimes nb_touristes_hotels
+    from
+        AIRBNB_PROJECT.curation.curation_tourists_per_year t
+    LEFT JOIN sejours_estimes s
+    ON year(t.year) = s.year
+)
+
+select 
+    year,
+    tourist_total,
+    total_review,
+    sejour_estimes,
+    pct_tourists_airbnb,
+    nb_touristes_hotels,
+    LAG(pct_tourists_airbnb) OVER(ORDER BY year) as precedent_year,
+    pct_tourists_airbnb -  LAG(pct_tourists_airbnb) OVER(ORDER BY year) evolution_tourist_airbnb,
+    round(
+    ((pct_tourists_airbnb / nullif(lag(pct_tourists_airbnb) over (order by year), 0)) - 1) * 100,2) croissance_pct
+    
+from tourisme_airbnb
+```
+
+Entre 2012 et 2023, la part des touristes utilisant Airbnb a connu une croissance spectaculaire, passant de 0,01 % à plus de 1 % du total des visiteurs.
+Cette évolution traduit une montée en puissance rapide d’Airbnb, surtout entre 2015 et 2021, avant une stabilisation récente.
+
+Si les hôtels restent largement majoritaires, les touristes privilégient de plus en plus les hébergements Airbnb, perçus comme plus flexibles et adaptés aux séjours individuels ou de longue durée.
+<img width="1979" height="1180" alt="image" src="https://github.com/user-attachments/assets/8f5e2a32-56db-4229-947e-005d89cc9677" />
