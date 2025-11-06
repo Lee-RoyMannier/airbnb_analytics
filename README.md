@@ -1,8 +1,9 @@
 # 🏠 Airbnb Analytics — Amsterdam Insights with dbt
 ## 📖 Contexte & objectifs
 
-Ce projet vise à analyser le marché Airbnb à Amsterdam à l’aide de dbt (Data Build Tool) et de données ouvertes sur les locations et le tourisme.
-L’objectif est de créer un pipeline analytique reproductible qui transforme des données brutes en indicateurs utiles pour comprendre l’évolution du marché de la location courte durée.
+Ce projet a pour objectif d’analyser le marché Airbnb à Amsterdam à partir de données ouvertes, en construisant un pipeline analytique reproductible avec dbt (Data Build Tool) et Snowflake.
+
+L’ambition est de transformer des données brutes en indicateurs exploitables pour mieux comprendre les dynamiques du marché de la location courte durée et les tendances touristiques associées.
 
 ## 🎯 Questions analytiques
 ### 🧩 Objectif 1 — Comprendre le marché Airbnb à Amsterdam
@@ -11,21 +12,21 @@ L’objectif est de créer un pipeline analytique reproductible qui transforme d
 
 ⭐ Comment se répartissent les super-hôtes dans la ville ?
 
-💰 Existe-t-il une relation entre le statut de super-hôte et le prix moyen des annonces ?
+💰 Existe-t-il une corrélation entre le statut de super-hôte et le prix moyen des annonces ?
 
 ### 🌍 Objectif 2 — Étudier les tendances touristiques
 
 En combinant les jeux de données :
 
-curation_tourists_per_year (nombre de touristes à Amsterdam chaque année),
+curation_tourists_per_year (nombre de touristes par an),
 
-et le nombre de reviews Airbnb laissées par an,
+et les données de reviews (commentaires Airbnb par année),
 
 le projet vise à :
 
-📊 déterminer si les touristes tendent à préférer Airbnb aux hôtels,
+📊 déterminer si les touristes privilégient davantage Airbnb que les hôtels,
 
-📈 observer l’évolution de cette préférence au fil des années.
+📈 observer l’évolution de cette tendance au fil des années.
 
 ## ⚙️ Stack technique
 | Outil                     | Rôle                                              |
@@ -41,7 +42,7 @@ Le jeu de données a été téléchargé depuis le site https://insideairbnb.com
 pour plusieurs villes. Pour notre travail, nous avons choisi la ville d'Amsterdam correspondant à un extrait du 11 Mars 2024
 
 <details>
-   <summary>Mise en place de dbt (sur dbt cloud) et de snowflake</summary>
+   <summary>Mise en place de l’environnement</summary>
 
 ## C'est quoi DBT?
    DBT est un outil SQL qui permet:
@@ -65,11 +66,8 @@ le `listing_id` et la `date` du commentaire qui a été laissé. Par exemple, ce
 ```
 indiquent que le `listing_id` 262394 a reçu 2 commentaires: un le 11 Avril 2012 et l'autre le 25 Avril 2012.
 
-# Chapitre 1: Mise en place de l'environnement
 ## Configuration de Snowflake
-Pour configurer l'accès de DBT à Snowflake, copiez-coller cet ensemble de requêtes SQL dans Snowflake et exécutez-le. 
-N'hésitez pas à changer le mot de passe pour plus de sécurité.  
-  Le fichier de détail des commandes pour la création du rôle et la mise en place de dbt ce trouve dans le dépôt git sous le nom "CREATION ET MISE EN PLACE DE DBT SUR SNOWFLAKE"
+Exécutez le script suivant dans Snowflake pour configurer le rôle, l’utilisateur dbt et les accès nécessaires :
 ```sql
 USE ROLE ACCOUNTADMIN;
 
@@ -102,119 +100,27 @@ GRANT ALL ON ALL TABLES IN SCHEMA AIRBNB_PROJECT.RAW to ROLE transform;
 GRANT ALL ON FUTURE TABLES IN SCHEMA AIRBNB_PROJECT.RAW to ROLE transform;
 ```
 
+💡 Tous les scripts SQL détaillés sont disponibles dans le dépôt (CREATION ET MISE EN PLACE DE DBT SUR SNOWFLAKE.sql).
 ## Chargement des donneées
-Pour charger les données dans Snowflake, il nous faut faire un peu de gymnastique SQL.
-cet ensemble de requêtes et de les exécuter dans Snowflake. 
-   Le fichier de détail des commandes pour la création des tables dans snowflake ce trouve dans le dépôt git sous le nom "CREATION TABLE SUR SNOWFLAKE"
-```sql
-USE WAREHOUSE COMPUTE_WH;
-USE DATABASE AIRBNB_PROJECT;
-USE SCHEMA RAW;    
-    
-create or replace api integration integration_jeu_de_donnees_github
-api_provider = git_https_api
-api_allowed_prefixes = ('https://github.com/QuantikDataStudio')
-enabled = true;
+Les données sont chargées directement depuis le dépôt GitHub à l’aide de l’intégration git_https_api.
+Le schéma RAW contient trois tables sources :
 
-create or replace git repository jeu_de_donnees_airbnb
-api_integration = integration_jeu_de_donnees_github
-origin = 'https://github.com/QuantikDataStudio/dbt.git';
+HOSTS
 
-create or replace file format format_jeu_de_donnees
-type = csv
-skip_header = 1
-field_optionally_enclosed_by = '"';
+LISTINGS
 
-CREATE TABLE AIRBNB_PROJECT.RAW.HOSTS
-(
-    host_id                STRING,
-    host_name              STRING,
-    host_since             DATE,
-    host_location          STRING,
-    host_response_time     STRING,
-    host_response_rate     STRING,
-    host_is_superhost      STRING,
-    host_neighbourhood     STRING,
-    host_identity_verified STRING
-);
+REVIEWS
 
-
-insert INTO AIRBNB_PROJECT.RAW.HOSTS (SELECT $1 as host_id,
-                                     $2 as host_name,
-                                     $3 as host_since,
-                                     $4 as host_location,
-                                     $5 as host_response_time,
-                                     $6 as host_response_rate,
-                                     $7 as host_is_superhost,
-                                     $8 as host_neighbourhood,
-                                     $9 as host_identity_verified
-                              from @jeu_de_donnees_airbnb/branches/main/dataset/hosts.csv
-                          (FILE_FORMAT => 'format_jeu_de_donnees'));
-
-CREATE TABLE AIRBNB_PROJECT.RAW.LISTINGS
-(
-    id                     STRING,
-    listing_url            STRING,
-    name                   STRING,
-    description            STRING,
-    neighbourhood_overview STRING,
-    host_id                STRING,
-    latitude               STRING,
-    longitude              STRING,
-    property_type          STRING,
-    room_type              STRING,
-    accommodates           integer,
-    bathrooms              FLOAT,
-    bedrooms               FLOAT,
-    beds                   FLOAT,
-    amenities              STRING,
-    price                  STRING,
-    minimum_nights         INTEGER,
-    maximum_nights         INTEGER
-);
-
-INSERT INTO AIRBNB_PROJECT.RAW.LISTINGS (SELECT $1  AS id,
-                                        $2  AS listing_url,
-                                        $3  AS name,
-                                        $4  AS description,
-                                        $5  AS neighbourhood_overview,
-                                        $6  AS host_id,
-                                        $7  AS latitude,
-                                        $8  AS longitude,
-                                        $9  AS property_type,
-                                        $10 AS room_type,
-                                        $11 AS accommodates,
-                                        $12 AS bathrooms,
-                                        $13 AS bedrooms,
-                                        $14 AS beds,
-                                        $15 AS amenities,
-                                        $16 AS price,
-                                        $17 AS minimum_nights,
-                                        $18 AS maximum_nights
-                                 from @jeu_de_donnees_airbnb/branches/main/dataset/listings.csv
-                          (FILE_FORMAT => 'format_jeu_de_donnees'));
-
-
-CREATE TABLE AIRBNB_PROJECT.RAW.REVIEWS
-(
-    listing_id  STRING,
-    date        DATE
-);
-
-INSERT INTO AIRBNB_PROJECT.RAW.REVIEWS (SELECT $1 as listing_id,
-                                       $2 as date
-                                from @jeu_de_donnees_airbnb/branches/main/dataset/reviews.csv
-                                    (FILE_FORMAT => 'format_jeu_de_donnees'));
-```
-Ne pas oublier de rentrer toutes les informations importante (comme le rôle, la connection ect) dans les paramètre du projet DBT
+Les scripts complets de création et d’insertion se trouvent dans le fichier
+CREATION TABLE SUR SNOWFLAKE.sql.
 </details>
 
 <details>
-   <summary>Création de nos modèles dans DBT</summary>
-   Si je devais expliquer ce qu'est un modèles dbt, je dirai:
-   Les modèles DBT sont des fichiers qui contiennent des requêtes SQL qui servent à définir des tables, vue ou de simples parties d'une requête plus large, et qui permettent ensuite de travailler avec
-   Le SQL pour `curation_hosts` est le suivant:
-
+   <summary>Création des modèles dbt</summary>
+  Les modèles dbt définissent la logique de transformation SQL appliquée aux données brutes.
+Chaque modèle génère une vue ou table nettoyée, stockée dans le schéma curation.
+✳️ Exemple : curation_hosts.sql
+	
 ```snowflake
 WITH hosts_raw AS (
     SELECT
@@ -233,7 +139,7 @@ SELECT *
 from hosts_raw
 ```
 
-Le SQL pour `curation_listings` est le suivant:
+💰 Exemple : curation_listings.sql
 ```snowflake
 WITH listings_raw AS 
 	(SELECT 
@@ -285,107 +191,97 @@ GROUP BY LISTING_ID, review_date
 <img width="677" height="502" alt="image" src="https://github.com/user-attachments/assets/9fb4c2d0-664b-4ca8-89e7-45a237966ae9" />
 Nos models CURATION sont la version "propre" de nos donnée provenant de la source principale RAW
 
-maintenant que c'est fait, nous allons pouvoir mettre un vrai nom à notre projet dans "dbt_project.yaml"
-<img width="623" height="137" alt="image" src="https://github.com/user-attachments/assets/78239081-08d3-46cb-a5b5-ba07b5e5a839" />
-<img width="385" height="122" alt="image" src="https://github.com/user-attachments/assets/262872d2-567f-4721-a1ee-c23f3769b807" />
+🧮 Macros dbt
+🎯 Macro : extraire_prix_a_partir_dun_caractere.sql
+Cette macro permet de convertir une chaîne de caractères en valeur numérique,
+en gérant les cas où le symbole $ se trouve avant ou après le montant.
 
-En rajoutant: 
-	+schema:curation, 
-je vais créer un schema dans snowflake me permettant de séparer mes tables curation du raw et ainsi garder une certaine cohérence.
-
-Dans l'état actuel, quand on va build notre dbt, on va se retrouver avec un schema au nom: RAW_CURATION, hors, on ne veut pas, on veux quelque chose de professionel.
-On va alors écrire une macro Jinja permettant de contourner cela.
-=> macro/generate_schema_name.sqm
 ```
-{% macro generate_schema_name(custom_schema_name, node) -%}
+{% macro extraire_prix_a_partir_dun_caractere(price, symbol) -%}
+    try_cast(
+        CASE 
+            WHEN STARTSWITH({{ price }}, '{{ symbol }}') THEN SPLIT_PART({{ price }}, '{{ symbol }}', 2)
+            WHEN ENDSWITH({{ price }}, '{{ symbol }}') THEN SPLIT_PART({{ price }}, '{{ symbol }}', 1)
+            ELSE NULL
+        END
+    AS FLOAT)
+{% endmacro %}
 
-    {%- set default_schema = target.schema -%}
-    {%- if custom_schema_name is none -%}
-
-        {{ default_schema }}
-
-    {%- else -%}
-
-        {{ custom_schema_name | trim }}
-
-    {%- endif -%}
-
-{%- endmacro %}
 ```
+Utilisation: 
+```
+{{ extraire_prix_a_partir_dun_caractere('price', '$') }} AS price
 
-## Mise en place de mon linéage
-Dans mon dossier Models, je vais créer un fichier sources.yaml me permettant de définir mes tables et ainsi créer mes dépendance.
 ```
-version: 2
+</details>
+<details>
+	<summary>Définition des sources</summary>
+	Le fichier sources.yaml définit les dépendances entre les tables sources et les modèles dbt :
+	
+	```
+	version: 2
 
-sources:
-  - name: raw_airbnb_data
-    database: airbnb_project
-    schema: raw
-    tables:
-      - name: hosts
-      - name: listings
-      - name: reviews
-```
+	sources:
+	  - name: raw_airbnb_data
+	    database: airbnb_project
+	    schema: raw
+	    tables:
+	      - name: hosts
+	      - name: listings
+	      - name: reviews
 
-## Mise en place de notre Seed (tourists_per_year) 
-Dans l'arborescence de dbt, dans mon dosser seeds, je vais créer un fichier "tourists_per_year.csv" et y mettre le contenu de mon fichier.
-Une fois cela fait, je vais pouvoir ajouter mon seed a mon dbt_project.yaml
+	```
+</details>
+<details>
+	<summary>Seeds</summary>
+	Un seed est utilisé pour intégrer des données statiques dans dbt, ici tourists_per_year.csv
+	
+	```
+	seeds:
+  	airbnb_analytics:
+    tourists_per_year:
+      +enabled: true
+      +database: airbnb_project
+      +schema: raw
+	```
+Transformation en model curation:
 ```
-seeds:
-  airbnb_analytics:
-  tourists_per_year:
-    +enabled: true
-    +database: airbnb_project
-    +schema: raw
-```
-Maintenant je suis prêt a faire mon T dans mon ELT (Extract Load Transform)
-Je vais créer un curation_tourists_per_year.sql et lui mettre:
-```
-with curation_tourists AS
-(
+WITH curation_tourists AS (
     SELECT  
         year,
         tourists
-    FROM
-        {{ ref('tourists_per_year')}}
+    FROM {{ ref('tourists_per_year') }}
 )
-
 SELECT  
-    DATE(year || '-12-31') as year,
+    DATE(year || '-12-31') AS year,
     tourists
-FROM    
-    curation_tourists
+FROM curation_tourists;
+
 ```
-
-## Mise en place de Snapshots
-Les snapshots servent à capturer l'évolution des dpnnées dans le temps, c-a-d, garder l'historique des changements dans une table source.
-
-Dans mon dossier snapshots de dbt, je vais creer un fichier "snapshot_+nom de la table".sql (donc je vais creer un snapshot pour chaque fichier source qui risque de changer ET qui possède une clé unique permettant de filter dessus, ici hosts et listings, reviews ne possède pas de clé unique)
-
-Pour hosts:
-```
-{% snapshot hosts_snapshot %}
-
-    {{
-        config(
-          target_database='airbnb',
-          target_schema='snapshots',
-          strategy='check',
-          check_cols='all',
-          unique_key='host_id'
-        )
-    }}
-
-    select * from {{ source('raw_airbnb_data', 'hosts') }}
-
-{% endsnapshot %}
-```
-
-Pour listings:
+</details>	
+<details>
+	<summary>Snapshots</summary>
+	Les snapshots permettent de suivre l’évolution des données dans le temps.
+	hosts_snapshot.sql
+	
+	```
+		{% snapshot hosts_snapshot %}
+	    {{
+	        config(
+	          target_database='airbnb',
+	          target_schema='snapshots',
+	          strategy='check',
+	          check_cols='all',
+	          unique_key='host_id'
+	        )
+	    }}
+	    SELECT * FROM {{ source('raw_airbnb_data', 'hosts') }}
+		{% endsnapshot %}
+	```
+	
+listings_snapshot.sql
 ```
 {% snapshot listings_snapshot %}
-
     {{
         config(
           target_database='airbnb',
@@ -395,190 +291,55 @@ Pour listings:
           unique_key='id'
         )
     }}
-
-    select * from {{ source('raw_airbnb_data', 'listings') }}
-
+    SELECT * FROM {{ source('raw_airbnb_data', 'listings') }}
 {% endsnapshot %}
+
 ```
-nb: maintenant que nos snapshots sont créés, je vais pouvoir les référencer dans mes tables curation:
-exemple:
-```
-	WITH hosts_raw AS (
-    SELECT
-		host_id,
-		CASE WHEN len(host_name) = 1 THEN 'Anonyme' ELSE host_name END AS host_name,
-		host_since,
-		host_location,
-		SPLIT_PART(host_location, ',', 1) AS host_city,
-		SPLIT_PART(host_location, ',', 2) AS host_country,
-		TRY_CAST(REPLACE(host_response_rate, '%', '') AS INTEGER) AS response_rate,
-		host_is_superhost = 't' AS is_superhost,
-		host_neighbourhood,
-		host_identity_verified = 't' AS is_identity_verified
-    FROM {{ ref("hosts_snapshot")}}
-        WHERE DBT_VALID_TO is NULL
-    )
-SELECT *
-from hosts_raw
-```
-## Mise en place de tests unitaire sur mes tables du schema RAW
+</details>	
+<details>
+	<summary>Tests dbt</summary>
+	✅ Tests sur les sources RAW
+
+Les tests unitaires vérifient la qualité des données brutes :
+
+unicité (unique)
+
+non-nullité (not_null)
+
+intégrité référentielle (relationships)
+
+valeurs autorisées (accepted_values)
+
+🧩 Tests sur les modèles CURATION
+
+Des tests de validation assurent la cohérence des données transformées :
 ```
 version: 2
-
-sources:
-  - name: raw_airbnb_data
-    database: airbnb
-    schema: raw
-    tables:
-      - name: hosts
-        columns:
-        - name: host_id
-	        description: nom de description
-          tests:
-            - unique
-            - not_null
-        - name: host_name
-          tests:
-            - not_null
-        - name: host_since
-          tests:
-            - not_null
-        - name: host_identity_verified
-          tests:
-            - not_null
-            - accepted_values:
-	            values: ['t', 'f']
-
-      - name: listings
-	      columns:
-		      - name: host_id
-			      tests:
-				      - not_null
-				      - relationshi^s:
-					      to: source('raw_airbnb_data', 'hosts')
-					      field: host_id
-      - name: reviews
-```
-Etant donnée que certaines colonnes possèdes des valeurs manquantes, nous allons pas les tester.
-
-## Mise en place de tests unitaires sur mes tables du schema CURATION
-Je vais créer un fichier schema.yaml dans mon dossier models
-```
-version: 2
-
 models:
-  - name: curation_hosts
-    description: Table hotes nettoyée et formatée
-    columns:
-      - name: host_id
-        description: Identifiant unique de l'hôte
-        tests:
-          - unique
-          - not_null
-      - name: host_name
-        description: Nom de l'hôte
-        tests:
-          - not_null
-      - name: host_since
-        description: Date d'inscription de l'hôte
-        tests:
-          - not_null
-      - name: host_location
-        description: Ville et pays de l'hôte
-        tests:
-          - not_null
-      - name: host_city
-        description: Ville de l'hôte
-        tests:
-          - not_null
-      - name: host_country
-        description: Pays de l'hôte
-        tests:
-          - not_null
-      - name: is_superhost
-        description: Indicateur si l'hôte a le statut superhost 
-        tests:
-          - not_null
-          - accepted_values:
-              values: [TRUE, FALSE]
-      - name: host_neighbourhood
-        description: Quartier de l'hôte
-        tests:
-          - not_null
-      - name: is_identity_verified
-        description: Indicateur si l'identité de l'hôte a été vérifiée  
-        tests:
-          - not_null
-          - accepted_values:
-              values: [TRUE, FALSE]
   - name: curation_listings
-    desciption: Table de listing nettoyée et formatée
+    description: "Table nettoyée et enrichie des annonces Airbnb"
     columns:
       - name: price
-        description: Prix par nuit
+        description: "Prix par nuit en euros"
         tests:
           - not_null
-  - name: curation_reviews
-    desciption: Table de review nettoyée et formatée
-    columns:
-      - name: listing_id
-        description: identifiant du listing, reférence la colonne lisintg_id dans curation_listings
-        tests:
-          - not_null
-          - relationships:
-              to: ref('curation_listings')
-              field: listing_id
-```
-Quand je vais faire un dbt build, certainnes colonnes vont bug car il y a des élements NULL donc pour passer cela, je vais y mettre des conditions
-exemple pour la table curation_listings:
-```
-WITH listings_raw AS 
-	(SELECT 
-		id AS listing_id,
-		listing_url,
-		name,
-		description,
-		description IS NOT NULL has_description,
-		neighbourhood_overview,
-		neighbourhood_overview IS NOT NULL AS has_neighrbourhood_description,
-		host_id,
-		latitude,
-		longitude,
-		property_type,
-		room_type,
-		accommodates,
-		bathrooms,
-		bedrooms,
-		beds,
-		amenities,
-        try_cast(split_part(price, '$', 1) as float) as price,
-		minimum_nights,
-		maximum_nights
-	FROM {{ ref("listings_snapshot") }}
-        WHERE DBT_VALID_TO is NULL )
-SELECT *
-FROM listings_raw
-where price is not null
-```
 
-## Mise en place de mes units test
-Dans le fichier sources.yaml
+```
+Tests unitaires personnalisés
+Les unit tests vérifient la logique de transformation à partir d’exemples isolés.
 ```
 unit_tests:
-  - name: test_is_host_data_transformation_correct
-    description: "Vérifie que host_name, host_city, host_country et response_rate sont créés correctement"
-    model: curation_hosts
+  - name: test_is_curation_listings_price_transformation_correct
+    description: "Vérifie la transformation de la colonne price"
+    model: curation_listings
     given:
-      - input: ref('hosts_snapshot')
+      - input: ref('listings_snapshot')
         rows:
-          - {host_name: 'Jacko', host_location: "ville,pays", host_response_rate: '32%', DBT_VALID_TO: null, host_is_superhost: 't', host_neighbourhood: 'quartier'} 
-          - {host_name: 'Xi', host_location: "ville,pays", host_response_rate: '32.03%', DBT_VALID_TO: null, host_is_superhost: 't', host_neighbourhood: 'quartier'}
-          - {host_name: 'J', host_location: "pays,ville", host_response_rate: '32.53%', DBT_VALID_TO: null, host_is_superhost: 't', host_neighbourhood: 'quartier'}
+          - {price: '52.23$', DBT_VALID_TO: null}
+          - {price: '$52.23', DBT_VALID_TO: null}
     expect:
       rows:
-        - {host_name: 'Jacko', host_city: 'ville', host_country: 'pays', response_rate: 32}
-        - {host_name: 'Xi', host_city: 'ville', host_country: 'pays', response_rate: 32}
-        - {host_name: 'Anonyme', host_city: 'pays', host_country: 'ville', response_rate: 33}
+        - {price: 52.23}
 
 ```
-</details>
+</details>	
