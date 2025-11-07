@@ -412,7 +412,6 @@ Des quartiers comme Nieuwmarkt en Lastage, Westelijke Eilanden et Oosterparkbuur
 
 En résumé, les super hôtes se concentrent dans les zones touristiques et centrales, là où la demande et la qualité de service sont les plus élevées.
 
-Graphique TOP 10:
 <img width="1183" height="546" alt="image" src="https://github.com/user-attachments/assets/913169d6-1ff5-4c90-a7d6-ff761130dc0c" />
 
 ## 💰 Existe-t-il une corrélation entre le statut de super-hôte et le prix moyen des annonces ?
@@ -451,6 +450,7 @@ L’analyse montre qu’il n’y a pas de lien direct entre le statut de super h
 
 Au contraire, les super hôtes pratiquent en moyenne des tarifs légèrement inférieurs à ceux des non super hôtes (environ 180 € contre 220 €).
 Cela suggère que le statut de super hôte reflète davantage la qualité du service et la fiabilité, plutôt qu’un positionnement haut de gamme.
+Graphique TOP 10:
 <img width="773" height="402" alt="image" src="https://github.com/user-attachments/assets/ff90ccf9-dbd1-4121-a972-a32558af60eb" />
 
 => Les résultats ont été exportés au format CSV
