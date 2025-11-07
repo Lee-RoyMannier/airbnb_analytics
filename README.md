@@ -5,6 +5,17 @@ Ce projet a pour objectif d’analyser le marché Airbnb à Amsterdam à partir 
 
 L’ambition est de transformer des données brutes en indicateurs exploitables pour mieux comprendre les dynamiques du marché de la location courte durée et les tendances touristiques associées.
 
+## 🎓 Compétences démontrées
+
+| Compétence | Application concrète |
+|------------|----------------------|
+| **dbt** | Architecture modulaire, snapshots SCD2, macros Jinja, tests qualité |
+| **SQL avancé** | CTEs, window functions (LAG), agrégations complexes, transformations |
+| **Snowflake** | Configuration warehouse, intégration GitHub, gestion des rôles |
+| **Data Modeling** | Modélisation en couches (Raw → Curation → Marts) |
+| **Data Quality** | Tests unitaires, schema tests, validation end-to-end |
+| **Business Analysis** | Calcul de KPIs, analyse de tendances, insights actionnables |
+| **Documentation** | README structuré, code commenté, YAML documentation |
 ## 🎯 Questions analytiques
 ### 🧩 Objectif 1 — Comprendre le marché Airbnb à Amsterdam
 
@@ -41,23 +52,28 @@ le projet vise à :
 Le jeu de données a été téléchargé depuis le site https://insideairbnb.com/get-the-data/ qui regroupe les données Airbnb 
 pour plusieurs villes. Pour notre travail, nous avons choisi la ville d'Amsterdam correspondant à un extrait du 11 Mars 2024
 
+## 🚀 Comment reproduire le projet
+
+### Prérequis
+- Compte [Snowflake](https://signup.snowflake.com/) (trial gratuit 30 jours)
+- Compte [dbt Cloud](https://www.getdbt.com/) (gratuit)
 <details>
    <summary>Mise en place de l’environnement</summary>
 
 ## C'est quoi DBT?
    DBT est un outil SQL qui permet:
 1. Aux DA/DE d'écrire les trasnformations de leurs données en SQL
-2. Aux DA/DE de ne âs répéter leur code SQL grâce à la modularisation et à la paramétrisation
+2. Aux DA/DE de ne pas répéter leur code SQL grâce à la modularisation et à la paramétrisation
 3. Aux DA/DE de tester leurs code SQL en isolation mais aussi de voir comment il s'intègre à la plateforme analytics
 4. Aux entreprises de s'assurer de la traçabilité des données
 5. Aux entreprises d'appliquer les bonnes règles de data gouvernance
 
 ## Traitement
 1. Division du fichier `listings.csv.gz` en 2 fichiers:
-   1. [listings](dataset/listings.csv) avec un nombre de colonnes réduit et qui ne contient que les donneées qui 
+   1. [listings](dataset/listings.csv) avec un nombre de colonnes réduit et qui ne contient que les données qui 
    touchent directement au listing (i.e. on a enlevé les données de l'hôte et sur les revues) 
    2. [hosts](dataset/hosts.csv) ce fichier, extrait du fichier `listings.csv.gz`, ne contient que les infos concernant 
-   l'hoôte. Ici aussi, nous avons limité le nombre de colonnes par rapport à toutes les infos qu'on avait
+   l'hôte. Ici aussi, nous avons limité le nombre de colonnes par rapport à toutes les infos qu'on avait
 2. [reviews](dataset/reviews.csv) ce fichier a été téléchargé du jeu de données résumé où on n'a que 2 colonnes:
 le `listing_id` et la `date` du commentaire qui a été laissé. Par exemple, ces 2 lignes ci-dessous
 ```csv
@@ -363,8 +379,8 @@ WITH categorisation_price as (
         END AS price_category,
         h.host_neighbourhood
     FROM
-        {{ ref("curation_listings") }} p
-    INNER JOIN {{ ref("curation_hosts") }} h
+        AIRBNB_PROJECT.curation_info.curation_listings p
+    INNER JOIN AIRBNB_PROJECT.curation.curation_hosts h
     ON p.host_id = h.host_id
 )
 
@@ -381,6 +397,179 @@ Les logements Budget (15–20 %) se trouvent surtout dans les quartiers périph�
 
 Les quartiers les plus dynamiques sont Oud-West, Grachtengordel, De Pijp et Jordaan, qui regroupent la majorité des annonces.
 En résumé, plus on s’éloigne du centre, plus les prix ont tendance à diminuer.
+| HOST_NEIGHBOURHOOD | PRICE_CATEGORY | COUNT(PRICE_CATEGORY) |
+|---------------------|----------------|------------------------|
+| Amsterdam Centrum | Budget | 4 |
+| Amsterdam Centrum | Confort | 21 |
+| Amsterdam Centrum | Premium | 4 |
+| Amsterdam Centrum | Standard | 19 |
+| Banne Buiksloot | Budget | 6 |
+| Banne Buiksloot | Confort | 2 |
+| Banne Buiksloot | Standard | 6 |
+| Belváros | Premium | 1 |
+| Bos en Lommer | Budget | 9 |
+| Bos en Lommer | Confort | 12 |
+| Bos en Lommer | Standard | 15 |
+| Brockley | Confort | 1 |
+| Buiksloterham | Budget | 1 |
+| Buiksloterham | Confort | 2 |
+| Buiksloterham | Premium | 5 |
+| Buiksloterham | Standard | 4 |
+| Buikslotermeer | Confort | 5 |
+| Buikslotermeer | Standard | 4 |
+| Buitenveldert-Oost | Confort | 1 |
+| Buitenveldert-Oost | Standard | 3 |
+| Buitenveldert-West | Budget | 3 |
+| Buitenveldert-West | Confort | 5 |
+| Buitenveldert-West | Standard | 4 |
+| Cannes | Premium | 1 |
+| De Pijp | Budget | 14 |
+| De Pijp | Confort | 42 |
+| De Pijp | Luxe | 1 |
+| De Pijp | Premium | 11 |
+| De Pijp | Standard | 36 |
+| De Wallen | Budget | 5 |
+| De Wallen | Confort | 3 |
+| De Wallen | Premium | 1 |
+| De Wallen | Standard | 26 |
+| El Raval | Standard | 1 |
+| Frederik Hendrikbuurt | Budget | 1 |
+| Frederik Hendrikbuurt | Confort | 9 |
+| Frederik Hendrikbuurt | Premium | 2 |
+| Frederik Hendrikbuurt | Standard | 8 |
+| Glòries - El Parc | Budget | 8 |
+| Glòries - El Parc | Standard | 2 |
+| Grachtengordel | Budget | 10 |
+| Grachtengordel | Confort | 51 |
+| Grachtengordel | Luxe | 1 |
+| Grachtengordel | Premium | 21 |
+| Grachtengordel | Standard | 62 |
+| Hampstead | Confort | 1 |
+| Hoofddorppleinbuurt | Budget | 3 |
+| Hoofddorppleinbuurt | Confort | 17 |
+| Hoofddorppleinbuurt | Premium | 4 |
+| Hoofddorppleinbuurt | Standard | 26 |
+| IJplein en Vogelbuurt | Budget | 4 |
+| IJplein en Vogelbuurt | Confort | 3 |
+| IJplein en Vogelbuurt | Premium | 1 |
+| IJplein en Vogelbuurt | Standard | 3 |
+| Indische Buurt | Budget | 8 |
+| Indische Buurt | Confort | 13 |
+| Indische Buurt | Luxe | 1 |
+| Indische Buurt | Premium | 2 |
+| Indische Buurt | Standard | 17 |
+| Jordaan | Budget | 6 |
+| Jordaan | Confort | 47 |
+| Jordaan | Luxe | 2 |
+| Jordaan | Premium | 12 |
+| Jordaan | Standard | 43 |
+| Józsefváros - District VIII. | Budget | 1 |
+| Kadoelen | Confort | 6 |
+| Kadoelen | Standard | 3 |
+| LB of Islington | Standard | 1 |
+| La Combe | Confort | 1 |
+| La Sagrada Família | Standard | 1 |
+| Landelijk Noord | Budget | 2 |
+| Landelijk Noord | Confort | 1 |
+| Landelijk Noord | Standard | 2 |
+| Museumkwartier | Budget | 3 |
+| Museumkwartier | Confort | 5 |
+| Museumkwartier | Luxe | 1 |
+| Museumkwartier | Premium | 6 |
+| Museumkwartier | Standard | 8 |
+| Niagara | Confort | 1 |
+| Nieuwendam-Noord | Budget | 5 |
+| Nieuwendam-Noord | Confort | 1 |
+| Nieuwendam-Noord | Standard | 3 |
+| Nieuwmarkt en Lastage | Budget | 3 |
+| Nieuwmarkt en Lastage | Confort | 23 |
+| Nieuwmarkt en Lastage | Luxe | 1 |
+| Nieuwmarkt en Lastage | Premium | 1 |
+| Nieuwmarkt en Lastage | Standard | 30 |
+| Oost | Budget | 6 |
+| Oost | Confort | 19 |
+| Oost | Premium | 5 |
+| Oost | Standard | 20 |
+| Oostelijke Eilanden en Kadijken | Budget | 4 |
+| Oostelijke Eilanden en Kadijken | Confort | 6 |
+| Oostelijke Eilanden en Kadijken | Premium | 3 |
+| Oostelijke Eilanden en Kadijken | Standard | 12 |
+| Oosterparkbuurt | Budget | 8 |
+| Oosterparkbuurt | Confort | 26 |
+| Oosterparkbuurt | Luxe | 1 |
+| Oosterparkbuurt | Premium | 5 |
+| Oosterparkbuurt | Standard | 30 |
+| Oostzanerwerf | Budget | 4 |
+| Oostzanerwerf | Confort | 3 |
+| Oostzanerwerf | Standard | 13 |
+| Osdorp | Budget | 2 |
+| Osdorp | Confort | 1 |
+| Osdorp | Premium | 1 |
+| Osdorp | Standard | 9 |
+| Oud-West | Budget | 19 |
+| Oud-West | Confort | 74 |
+| Oud-West | Premium | 30 |
+| Oud-West | Standard | 90 |
+| Oud-Zuid | Confort | 5 |
+| Oud-Zuid | Luxe | 1 |
+| Oud-Zuid | Premium | 3 |
+| Oud-Zuid | Standard | 17 |
+| Overtoomse Veld | Budget | 6 |
+| Overtoomse Veld | Standard | 1 |
+| Rivierenbuurt | Budget | 2 |
+| Rivierenbuurt | Confort | 8 |
+| Rivierenbuurt | Luxe | 1 |
+| Rivierenbuurt | Premium | 5 |
+| Rivierenbuurt | Standard | 12 |
+| Sant Antoni | Confort | 1 |
+| Slotermeer-Noordoost | Budget | 4 |
+| Slotermeer-Noordoost | Confort | 1 |
+| Slotermeer-Noordoost | Standard | 1 |
+| Slotermeer-Zuidwest | Budget | 2 |
+| Slotermeer-Zuidwest | Confort | 2 |
+| Slotermeer-Zuidwest | Premium | 1 |
+| Slotervaart | Budget | 11 |
+| Slotervaart | Confort | 1 |
+| Slotervaart | Standard | 8 |
+| Spaarndammer en Zeeheldenbuurt | Budget | 3 |
+| Spaarndammer en Zeeheldenbuurt | Confort | 13 |
+| Spaarndammer en Zeeheldenbuurt | Standard | 14 |
+| Stadionbuurt | Budget | 7 |
+| Stadionbuurt | Confort | 5 |
+| Stadionbuurt | Premium | 3 |
+| Stadionbuurt | Standard | 5 |
+| Tuindorp Buiksloot | Budget | 3 |
+| Tuindorp Buiksloot | Confort | 2 |
+| Tuindorp Buiksloot | Premium | 1 |
+| Tuindorp Buiksloot | Standard | 4 |
+| Tuindorp Nieuwendam | Budget | 1 |
+| Tuindorp Nieuwendam | Confort | 2 |
+| Tuindorp Nieuwendam | Standard | 1 |
+| Tuindorp Oostzaan | Budget | 4 |
+| Tuindorp Oostzaan | Confort | 6 |
+| Tuindorp Oostzaan | Standard | 9 |
+| Volewijck | Confort | 1 |
+| Volewijck | Luxe | 2 |
+| Volewijck | Standard | 10 |
+| Watergraafsmeer | Budget | 4 |
+| Watergraafsmeer | Confort | 13 |
+| Watergraafsmeer | Luxe | 1 |
+| Watergraafsmeer | Premium | 2 |
+| Watergraafsmeer | Standard | 16 |
+| Weesperbuurt en Plantage | Budget | 3 |
+| Weesperbuurt en Plantage | Confort | 10 |
+| Weesperbuurt en Plantage | Luxe | 1 |
+| Weesperbuurt en Plantage | Premium | 7 |
+| Weesperbuurt en Plantage | Standard | 12 |
+| Westelijke Eilanden | Budget | 1 |
+| Westelijke Eilanden | Confort | 11 |
+| Westelijke Eilanden | Luxe | 1 |
+| Westelijke Eilanden | Premium | 4 |
+| Westelijke Eilanden | Standard | 17 |
+| Zeeburg | Budget | 2 |
+| Zeeburg | Confort | 8 |
+| Zeeburg | Premium | 1 |
+| Zeeburg | Standard | 19 |
 
 => Les résultats ont été exportés au format CSV
 
@@ -450,6 +639,104 @@ L’analyse montre qu’il n’y a pas de lien direct entre le statut de super h
 
 Au contraire, les super hôtes pratiquent en moyenne des tarifs légèrement inférieurs à ceux des non super hôtes (environ 180 € contre 220 €).
 Cela suggère que le statut de super hôte reflète davantage la qualité du service et la fiabilité, plutôt qu’un positionnement haut de gamme.
+
+| AVG_PRICE | QUARTIER | SUPER HOST |
+|------------|-----------|------------|
+| 227.09 | Amsterdam Centrum | non super host |
+| 223.96 | Amsterdam Centrum | super host |
+| 169.44 | Banne Buiksloot | non super host |
+| 86.8 | Banne Buiksloot | super host |
+| 423 | Belváros | non super host |
+| 193.08 | Bos en Lommer | non super host |
+| 125.1 | Bos en Lommer | super host |
+| 259 | Brockley | non super host |
+| 372.38 | Buiksloterham | non super host |
+| 184.75 | Buiksloterham | super host |
+| 209 | Buikslotermeer | non super host |
+| 161.5 | Buikslotermeer | super host |
+| 169 | Buitenveldert-Oost | super host |
+| 129 | Buitenveldert-Oost | non super host |
+| 198 | Buitenveldert-West | non super host |
+| 550 | Cannes | non super host |
+| 282.78 | De Pijp | non super host |
+| 183.48 | De Pijp | super host |
+| 153.85 | De Wallen | non super host |
+| 152.8 | De Wallen | super host |
+| 186 | El Raval | super host |
+| 264.06 | Frederik Hendrikbuurt | non super host |
+| 127 | Frederik Hendrikbuurt | super host |
+| 77.1 | Glòries - El Parc | super host |
+| 257.27 | Grachtengordel | non super host |
+| 220.42 | Grachtengordel | super host |
+| 214 | Hampstead | non super host |
+| 213.64 | Hoofddorppleinbuurt | non super host |
+| 159.38 | Hoofddorppleinbuurt | super host |
+| 252 | IJplein en Vogelbuurt | non super host |
+| 117.6 | IJplein en Vogelbuurt | super host |
+| 206.22 | Indische Buurt | non super host |
+| 203 | Indische Buurt | super host |
+| 284.7 | Jordaan | non super host |
+| 217.49 | Jordaan | super host |
+| 62 | Józsefváros - District VIII. | super host |
+| 249.13 | Kadoelen | non super host |
+| 115 | Kadoelen | super host |
+| 192 | LB of Islington | non super host |
+| 246 | La Combe | super host |
+| 121 | La Sagrada Família | super host |
+| 180 | Landelijk Noord | non super host |
+| 85 | Landelijk Noord | super host |
+| 385.21 | Museumkwartier | non super host |
+| 173.33 | Museumkwartier | super host |
+| 260 | Niagara | non super host |
+| 180.6 | Nieuwendam-Noord | non super host |
+| 69 | Nieuwendam-Noord | super host |
+| 223.62 | Nieuwmarkt en Lastage | non super host |
+| 219.76 | Nieuwmarkt en Lastage | super host |
+| 257.88 | Oost | non super host |
+| 160.19 | Oost | super host |
+| 235.12 | Oostelijke Eilanden en Kadijken | non super host |
+| 125.5 | Oostelijke Eilanden en Kadijken | super host |
+| 245.71 | Oosterparkbuurt | non super host |
+| 151.76 | Oosterparkbuurt | super host |
+| 190 | Oostzanerwerf | non super host |
+| 141.13 | Oostzanerwerf | super host |
+| 149 | Osdorp | super host |
+| 148.8 | Osdorp | non super host |
+| 242.1 | Oud-West | non super host |
+| 201.03 | Oud-West | super host |
+| 251.43 | Oud-Zuid | non super host |
+| 150.8 | Oud-Zuid | super host |
+| 81.33 | Overtoomse Veld | non super host |
+| 62 | Overtoomse Veld | super host |
+| 315.9 | Rivierenbuurt | non super host |
+| 171 | Rivierenbuurt | super host |
+| 263 | Sant Antoni | super host |
+| 167.5 | Slotermeer-Noordoost | non super host |
+| 86.5 | Slotermeer-Noordoost | super host |
+| 273.5 | Slotermeer-Zuidwest | non super host |
+| 71 | Slotermeer-Zuidwest | super host |
+| 139.13 | Slotervaart | non super host |
+| 92.75 | Slotervaart | super host |
+| 198.71 | Spaarndammer en Zeeheldenbuurt | non super host |
+| 172.89 | Spaarndammer en Zeeheldenbuurt | super host |
+| 214.75 | Stadionbuurt | non super host |
+| 176.75 | Stadionbuurt | super host |
+| 205 | Tuindorp Buiksloot | non super host |
+| 77 | Tuindorp Buiksloot | super host |
+| 191 | Tuindorp Nieuwendam | non super host |
+| 204.1 | Tuindorp Oostzaan | non super host |
+| 129.44 | Tuindorp Oostzaan | super host |
+| 458 | Volewijck | super host |
+| 163.56 | Volewijck | non super host |
+| 250.12 | Watergraafsmeer | non super host |
+| 142.09 | Watergraafsmeer | super host |
+| 300.74 | Weesperbuurt en Plantage | non super host |
+| 188.79 | Weesperbuurt en Plantage | super host |
+| 365.44 | Westelijke Eilanden | non super host |
+| 157.17 | Westelijke Eilanden | super host |
+| 191.13 | Zeeburg | non super host |
+| 178 | Zeeburg | super host |
+
 Graphique TOP 10:
 <img width="773" height="402" alt="image" src="https://github.com/user-attachments/assets/ff90ccf9-dbd1-4121-a972-a32558af60eb" />
 
@@ -499,6 +786,7 @@ select
     
 from tourisme_airbnb
 ```
+<img width="1638" height="387" alt="image" src="https://github.com/user-attachments/assets/cb1a4a0e-c9aa-42b8-bdef-6a9926397cdd" />
 
 Entre 2012 et 2023, la part des touristes utilisant Airbnb a connu une croissance spectaculaire, passant de 0,01 % à plus de 1 % du total des visiteurs.
 Cette évolution traduit une montée en puissance rapide d’Airbnb, surtout entre 2015 et 2021, avant une stabilisation récente.
