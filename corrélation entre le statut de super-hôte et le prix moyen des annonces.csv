@@ -1,95 +1,95 @@
-﻿AVG_PRICE,QUARTIER,'SUPER HOST'
-227.09,Amsterdam Centrum,non super host
-223.96,Amsterdam Centrum,super host
-169.44,Banne Buiksloot,non super host
-86.8,Banne Buiksloot,super host
-423,Belváros,non super host
-125.1,Bos en Lommer,super host
-193.08,Bos en Lommer,non super host
-259,Brockley,non super host
-372.38,Buiksloterham,non super host
-184.75,Buiksloterham,super host
-209,Buikslotermeer,non super host
-161.5,Buikslotermeer,super host
-169,Buitenveldert-Oost,super host
-129,Buitenveldert-Oost,non super host
-198,Buitenveldert-West,non super host
-550,Cannes,non super host
-282.78,De Pijp,non super host
-183.48,De Pijp,super host
-152.8,De Wallen,super host
-153.85,De Wallen,non super host
-186,El Raval,super host
-127,Frederik Hendrikbuurt,super host
-264.06,Frederik Hendrikbuurt,non super host
-77.1,Glòries - El Parc,super host
-257.27,Grachtengordel,non super host
-220.42,Grachtengordel,super host
-214,Hampstead,non super host
-213.64,Hoofddorppleinbuurt,non super host
-159.38,Hoofddorppleinbuurt,super host
-117.6,IJplein en Vogelbuurt,super host
-252,IJplein en Vogelbuurt,non super host
-203,Indische Buurt,super host
-206.22,Indische Buurt,non super host
-284.7,Jordaan,non super host
-217.49,Jordaan,super host
-62,Józsefváros - District VIII.,super host
-115,Kadoelen,super host
-249.13,Kadoelen,non super host
-192,LB of Islington,non super host
-246,La Combe,super host
-121,La Sagrada Família,super host
-180,Landelijk Noord,non super host
-85,Landelijk Noord,super host
-173.33,Museumkwartier,super host
-385.21,Museumkwartier,non super host
-260,Niagara,non super host
-180.6,Nieuwendam-Noord,non super host
-69,Nieuwendam-Noord,super host
-219.76,Nieuwmarkt en Lastage,super host
-223.62,Nieuwmarkt en Lastage,non super host
-257.88,Oost,non super host
-160.19,Oost,super host
-235.12,Oostelijke Eilanden en Kadijken,non super host
-125.5,Oostelijke Eilanden en Kadijken,super host
-245.71,Oosterparkbuurt,non super host
-151.76,Oosterparkbuurt,super host
-190,Oostzanerwerf,non super host
-141.13,Oostzanerwerf,super host
-149,Osdorp,super host
-148.8,Osdorp,non super host
-242.1,Oud-West,non super host
-201.03,Oud-West,super host
-150.8,Oud-Zuid,super host
-251.43,Oud-Zuid,non super host
-81.33,Overtoomse Veld,non super host
-62,Overtoomse Veld,super host
-315.9,Rivierenbuurt,non super host
-171,Rivierenbuurt,super host
-263,Sant Antoni,super host
-86.5,Slotermeer-Noordoost,super host
-167.5,Slotermeer-Noordoost,non super host
-71,Slotermeer-Zuidwest,super host
-273.5,Slotermeer-Zuidwest,non super host
-92.75,Slotervaart,super host
-139.13,Slotervaart,non super host
-198.71,Spaarndammer en Zeeheldenbuurt,non super host
-172.89,Spaarndammer en Zeeheldenbuurt,super host
-214.75,Stadionbuurt,non super host
-176.75,Stadionbuurt,super host
-205,Tuindorp Buiksloot,non super host
-77,Tuindorp Buiksloot,super host
-191,Tuindorp Nieuwendam,non super host
-129.44,Tuindorp Oostzaan,super host
-204.1,Tuindorp Oostzaan,non super host
-458,Volewijck,super host
-163.56,Volewijck,non super host
-142.09,Watergraafsmeer,super host
-250.12,Watergraafsmeer,non super host
-188.79,Weesperbuurt en Plantage,super host
-300.74,Weesperbuurt en Plantage,non super host
-365.44,Westelijke Eilanden,non super host
-157.17,Westelijke Eilanden,super host
-178,Zeeburg,super host
-191.13,Zeeburg,non super host
+﻿ AVG_PRICE ;QUARTIER;'SUPER HOST';;;;
+ 227,09 € ;Amsterdam Centrum;non super host;;;;
+ 223,96 € ;Amsterdam Centrum;super host;;;;
+ 169,44 € ;Banne Buiksloot;non super host;;;;
+ 86,80 € ;Banne Buiksloot;super host;;;;
+ 423,00 € ;Belváros;non super host;;;;
+ 125,10 € ;Bos en Lommer;super host;;;;
+ 193,08 € ;Bos en Lommer;non super host;;;;
+ 259,00 € ;Brockley;non super host;;;;
+ 372,38 € ;Buiksloterham;non super host;;Somme de AVG_PRICE;Étiquettes de colonnes;
+ 184,75 € ;Buiksloterham;super host;;Étiquettes de lignes;non super host;super host
+ 209,00 € ;Buikslotermeer;non super host;;Volewijck;163,56;458
+ 161,50 € ;Buikslotermeer;super host;;Museumkwartier;385,21;173,33
+ 169,00 € ;Buitenveldert-Oost;super host;;Buiksloterham;372,38;184,75
+ 129,00 € ;Buitenveldert-Oost;non super host;;Cannes;550;
+ 198,00 € ;Buitenveldert-West;non super host;;Westelijke Eilanden;365,44;157,17
+ 550,00 € ;Cannes;non super host;;Jordaan;284,7;217,49
+ 282,78 € ;De Pijp;non super host;;Weesperbuurt en Plantage;300,74;188,79
+ 183,48 € ;De Pijp;super host;;Rivierenbuurt;315,9;171
+ 152,80 € ;De Wallen;super host;;Grachtengordel;257,27;220,42
+ 153,85 € ;De Wallen;non super host;;De Pijp;282,78;183,48
+ 186,00 € ;El Raval;super host;;;;
+ 127,00 € ;Frederik Hendrikbuurt;super host;;;;
+ 264,06 € ;Frederik Hendrikbuurt;non super host;;;;
+ 77,10 € ;Glòries - El Parc;super host;;;;
+ 257,27 € ;Grachtengordel;non super host;;;;
+ 220,42 € ;Grachtengordel;super host;;;;
+ 214,00 € ;Hampstead;non super host;;;;
+ 213,64 € ;Hoofddorppleinbuurt;non super host;;;;
+ 159,38 € ;Hoofddorppleinbuurt;super host;;;;
+ 117,60 € ;IJplein en Vogelbuurt;super host;;;;
+ 252,00 € ;IJplein en Vogelbuurt;non super host;;;;
+ 203,00 € ;Indische Buurt;super host;;;;
+ 206,22 € ;Indische Buurt;non super host;;;;
+ 284,70 € ;Jordaan;non super host;;;;
+ 217,49 € ;Jordaan;super host;;;;
+ 62,00 € ;Józsefváros - District VIII,;super host;;;;
+ 115,00 € ;Kadoelen;super host;;;;
+ 249,13 € ;Kadoelen;non super host;;;;
+ 192,00 € ;LB of Islington;non super host;;;;
+ 246,00 € ;La Combe;super host;;;;
+ 121,00 € ;La Sagrada Família;super host;;;;
+ 180,00 € ;Landelijk Noord;non super host;;;;
+ 85,00 € ;Landelijk Noord;super host;;;;
+ 173,33 € ;Museumkwartier;super host;;;;
+ 385,21 € ;Museumkwartier;non super host;;;;
+ 260,00 € ;Niagara;non super host;;;;
+ 180,60 € ;Nieuwendam-Noord;non super host;;;;
+ 69,00 € ;Nieuwendam-Noord;super host;;;;
+ 219,76 € ;Nieuwmarkt en Lastage;super host;;;;
+ 223,62 € ;Nieuwmarkt en Lastage;non super host;;;;
+ 257,88 € ;Oost;non super host;;;;
+ 160,19 € ;Oost;super host;;;;
+ 235,12 € ;Oostelijke Eilanden en Kadijken;non super host;;;;
+ 125,50 € ;Oostelijke Eilanden en Kadijken;super host;;;;
+ 245,71 € ;Oosterparkbuurt;non super host;;;;
+ 151,76 € ;Oosterparkbuurt;super host;;;;
+ 190,00 € ;Oostzanerwerf;non super host;;;;
+ 141,13 € ;Oostzanerwerf;super host;;;;
+ 149,00 € ;Osdorp;super host;;;;
+ 148,80 € ;Osdorp;non super host;;;;
+ 242,10 € ;Oud-West;non super host;;;;
+ 201,03 € ;Oud-West;super host;;;;
+ 150,80 € ;Oud-Zuid;super host;;;;
+ 251,43 € ;Oud-Zuid;non super host;;;;
+ 81,33 € ;Overtoomse Veld;non super host;;;;
+ 62,00 € ;Overtoomse Veld;super host;;;;
+ 315,90 € ;Rivierenbuurt;non super host;;;;
+ 171,00 € ;Rivierenbuurt;super host;;;;
+ 263,00 € ;Sant Antoni;super host;;;;
+ 86,50 € ;Slotermeer-Noordoost;super host;;;;
+ 167,50 € ;Slotermeer-Noordoost;non super host;;;;
+ 71,00 € ;Slotermeer-Zuidwest;super host;;;;
+ 273,50 € ;Slotermeer-Zuidwest;non super host;;;;
+ 92,75 € ;Slotervaart;super host;;;;
+ 139,13 € ;Slotervaart;non super host;;;;
+ 198,71 € ;Spaarndammer en Zeeheldenbuurt;non super host;;;;
+ 172,89 € ;Spaarndammer en Zeeheldenbuurt;super host;;;;
+ 214,75 € ;Stadionbuurt;non super host;;;;
+ 176,75 € ;Stadionbuurt;super host;;;;
+ 205,00 € ;Tuindorp Buiksloot;non super host;;;;
+ 77,00 € ;Tuindorp Buiksloot;super host;;;;
+ 191,00 € ;Tuindorp Nieuwendam;non super host;;;;
+ 129,44 € ;Tuindorp Oostzaan;super host;;;;
+ 204,10 € ;Tuindorp Oostzaan;non super host;;;;
+ 458,00 € ;Volewijck;super host;;;;
+ 163,56 € ;Volewijck;non super host;;;;
+ 142,09 € ;Watergraafsmeer;super host;;;;
+ 250,12 € ;Watergraafsmeer;non super host;;;;
+ 188,79 € ;Weesperbuurt en Plantage;super host;;;;
+ 300,74 € ;Weesperbuurt en Plantage;non super host;;;;
+ 365,44 € ;Westelijke Eilanden;non super host;;;;
+ 157,17 € ;Westelijke Eilanden;super host;;;;
+ 178,00 € ;Zeeburg;super host;;;;
+ 191,13 € ;Zeeburg;non super host;;;;
